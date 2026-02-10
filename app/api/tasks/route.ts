@@ -29,7 +29,30 @@ export async function GET(req: Request) {
 
     const tasks = await prisma.task.findMany({
         where: { userId },
+        include: {
+            timeEntries: true,
+        },
     });
 
-    return NextResponse.json(tasks);
+    // Calculate total time and active timer for each task
+    const tasksWithTimerData = tasks.map(task => {
+        const activeTimer = task.timeEntries.find(entry => entry.end === null);
+        const totalTime = task.timeEntries
+            .filter(entry => entry.duration !== null)
+            .reduce((sum, entry) => sum + (entry.duration || 0), 0);
+
+        return {
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            completed: task.completed,
+            userId: task.userId,
+            completedAt: task.completedAt,
+            createdAt: task.createdAt,
+            activeTimerStart: activeTimer?.start || null,
+            totalTimeSpent: totalTime,
+        };
+    });
+
+    return NextResponse.json(tasksWithTimerData);
 }
