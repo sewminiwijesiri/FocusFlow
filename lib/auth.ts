@@ -17,3 +17,10 @@ export function getUserIdFromToken(req: Request) {
         return null;
     }
 }
+export function requireAuth(req: Request) {
+    const userId = getUserIdFromToken(req);
+    if (!userId) {
+        throw new Error("Unauthorized");
+    }
+    return userId;
+}
