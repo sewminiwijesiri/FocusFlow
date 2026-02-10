@@ -1,0 +1,45 @@
+{
+    "version": 1.1,
+    "atDirectives": [
+        {
+            "name": "@theme",
+            "description": "Tailwind CSS theme block",
+            "references": [
+                {
+                    "name": "Tailwind CSS Documentation",
+                    "url": "https://tailwindcss.com/docs/v4-beta#css-first-configuration"
+                }
+            ]
+        },
+        {
+            "name": "@apply",
+            "description": "Inline Tailwind CSS utilities into your CSS",
+            "references": [
+                {
+                    "name": "Tailwind CSS Documentation",
+                    "url": "https://tailwindcss.com/docs/functions-and-directives#apply"
+                }
+            ]
+        },
+        {
+            "name": "@utility",
+            "description": "Define a custom utility class in Tailwind CSS",
+            "references": [
+                {
+                    "name": "Tailwind CSS Documentation",
+                    "url": "https://tailwindcss.com/docs/v4-beta#custom-utilities"
+                }
+            ]
+        },
+        {
+            "name": "@variant",
+            "description": "Define a custom variant in Tailwind CSS",
+            "references": [
+                {
+                    "name": "Tailwind CSS Documentation",
+                    "url": "https://tailwindcss.com/docs/v4-beta#custom-variants"
+                }
+            ]
+        }
+    ]
+}

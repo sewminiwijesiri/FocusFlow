@@ -1,52 +1,93 @@
 "use client";
 
 import { useState } from "react";
+import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleLogin = async (e: React.FormEvent) => {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        const res = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
+        setError("");
+        setLoading(true);
+        try {
+            const data = await api("/api/auth/login", {
+                method: "POST",
+                body: JSON.stringify({ email, password }),
+            });
 
-        if (res.ok) {
-            const data = await res.json();
-            localStorage.setItem("token", data.token); // store JWT
+            localStorage.setItem("token", data.token);
             router.push("/dashboard");
-        } else {
-            alert("Login failed");
+            router.refresh();
+        } catch (err: any) {
+            setError(err.message || "Login failed. Please check your credentials.");
+        } finally {
+            setLoading(false);
         }
-    };
+    }
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
-            <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-96">
-                <h1 className="text-2xl font-bold mb-4">Login</h1>
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-2 mb-3 border rounded"
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-2 mb-3 border rounded"
-                />
-                <button type="submit" className="w-full bg-green-500 text-white p-2 rounded">
-                    Login
-                </button>
-            </form>
+        <div className="min-h-[calc(100vh-64px)] flex flex-col justify-center items-center px-4">
+            <div className="glass-card w-full max-w-md p-8 animate-fade-in">
+                <div className="text-center mb-10">
+                    <h1 className="text-4xl font-bold text-gradient mb-2">Welcome Back</h1>
+                    <p className="text-muted">Enter your details to access your focus flow.</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                        <div className="bg-accent/10 border border-accent/20 text-accent text-sm p-4 rounded-xl">
+                            {error}
+                        </div>
+                    )}
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted ml-1">Email Address</label>
+                        <input
+                            className="glass-input w-full"
+                            type="email"
+                            placeholder="name@example.com"
+                            required
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted ml-1">Password</label>
+                        <input
+                            className="glass-input w-full"
+                            type="password"
+                            placeholder="••••••••"
+                            required
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                        />
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? "Signing in..." : "Sign In"}
+                    </button>
+                </form>
+
+                <p className="text-center mt-8 text-muted">
+                    Don&apos;t have an account?{" "}
+                    <Link href="/register" className="text-primary hover:text-primary-hover font-semibold transition-colors">
+                        Register
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 }
+
