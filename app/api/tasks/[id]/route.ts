@@ -40,7 +40,8 @@ export async function PUT(req: Request, { params }: Params) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { title, description } = await req.json();
+    const { title, description, completed } = await req.json();
+
 
     const task = await prisma.task.updateMany({
         where: {
@@ -50,6 +51,7 @@ export async function PUT(req: Request, { params }: Params) {
         data: {
             title,
             description,
+            completed,
         },
     });
 

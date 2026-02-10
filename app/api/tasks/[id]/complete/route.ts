@@ -5,12 +5,13 @@ import { prisma } from "@/lib/prisma";
 import { getUserIdFromToken } from "@/lib/auth";
 
 type Params = {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 };
 
 export async function PATCH(req: Request, { params }: Params) {
+    const { id } = await params;
     const userId = getUserIdFromToken(req);
     if (!userId) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -18,7 +19,7 @@ export async function PATCH(req: Request, { params }: Params) {
 
     const task = await prisma.task.findFirst({
         where: {
-            id: params.id,
+            id,
             userId,
         },
     });
@@ -28,7 +29,7 @@ export async function PATCH(req: Request, { params }: Params) {
     }
 
     const updated = await prisma.task.update({
-        where: { id: params.id },
+        where: { id },
         data: { completed: !task.completed },
     });
 
