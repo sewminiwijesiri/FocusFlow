@@ -8,7 +8,23 @@ export async function PATCH(req: Request) {
     try {
         requireAuth(req);
 
-        const { taskId } = await req.json();
+        let body;
+        try {
+            body = await req.json();
+        } catch {
+            return NextResponse.json(
+                { message: "Invalid request body" },
+                { status: 400 }
+            );
+        }
+
+        const { taskId } = body;
+        if (!taskId) {
+            return NextResponse.json(
+                { message: "taskId is required" },
+                { status: 400 }
+            );
+        }
 
         const entry = await prisma.timeEntry.findFirst({
             where: {
@@ -38,10 +54,16 @@ export async function PATCH(req: Request) {
         });
 
         return NextResponse.json(updated);
-    } catch {
+    } catch (err: any) {
+        if (err.message === "Unauthorized") {
+            return NextResponse.json(
+                { message: "Unauthorized" },
+                { status: 401 }
+            );
+        }
         return NextResponse.json(
-            { message: "Unauthorized" },
-            { status: 401 }
+            { message: "Internal server error" },
+            { status: 500 }
         );
     }
 }

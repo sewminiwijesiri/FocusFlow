@@ -30,7 +30,10 @@ export async function PATCH(req: Request, { params }: Params) {
 
     const updated = await prisma.task.update({
         where: { id },
-        data: { completed: !task.completed },
+        data: {
+            completed: !task.completed,
+            completedAt: !task.completed ? new Date() : null
+        },
     });
 
     return NextResponse.json(updated);
