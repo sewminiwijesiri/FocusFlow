@@ -3,13 +3,24 @@ import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
-    const { email, password } = await req.json();
+    try {
+        const { email, password } = await req.json();
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+        if (!email || !password) {
+            return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
+        }
 
-    const user = await prisma.user.create({
-        data: { email, password: hashedPassword },
-    });
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-    return NextResponse.json(user);
+        const user = await prisma.user.create({
+            data: { email, password: hashedPassword },
+        });
+
+        return NextResponse.json(user);
+    } catch (error: any) {
+        if (error.code === 'P2002') {
+            return NextResponse.json({ error: "Email already exists" }, { status: 400 });
+        }
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
 }

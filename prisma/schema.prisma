@@ -28,7 +28,7 @@ model Task {
 model TimeEntry {
   id       String    @id @default(uuid())
   taskId   String
-  task     Task      @relation(fields: [taskId], references: [id])
+  task     Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
   start    DateTime
   end      DateTime?
   duration Int?

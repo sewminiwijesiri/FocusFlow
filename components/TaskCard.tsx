@@ -1,36 +1,116 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import TimerButton from "./TimerButton";
+import { api } from "@/lib/api";
 
 interface Task {
     id: string;
     title: string;
+    description?: string;
     completed: boolean;
 }
 
 interface TaskCardProps {
     task: Task;
     refresh: () => void;
+    onEdit: (task: Task) => void;
 }
 
-export default function TaskCard({ task, refresh }: TaskCardProps) {
+export default function TaskCard({ task, refresh, onEdit }: TaskCardProps) {
+    const [loading, setLoading] = useState(false);
+
+    async function toggleComplete() {
+        setLoading(true);
+        try {
+            await api(`/api/tasks/${task.id}`, {
+                method: "PUT",
+                body: JSON.stringify({ completed: !task.completed }),
+            });
+            refresh();
+        } catch (err) {
+            console.error("Failed to toggle task completion", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function deleteTask() {
+        if (!confirm("Are you sure you want to delete this task?")) return;
+        setLoading(true);
+        try {
+            await api(`/api/tasks/${task.id}`, {
+                method: "DELETE",
+            });
+            refresh();
+        } catch (err) {
+            console.error("Failed to delete task", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
-        <div className="glass-card p-5 flex justify-between items-center group hover:bg-white/[0.03] transition-all border-l-4 border-l-transparent hover:border-l-primary/50">
-            <div className="flex items-center gap-4">
-                <div className={`w-3 h-3 rounded-full ${task.completed ? "bg-secondary shadow-[0_0_10px_rgba(14,165,233,0.5)]" : "bg-primary shadow-[0_0_10px_rgba(99,102,241,0.5)]"}`} />
-                <div>
-                    <h3 className={`font-bold text-lg leading-tight ${task.completed ? "text-muted line-through" : "text-white"}`}>
+        <div className={`glass-card p-5 flex justify-between items-center group transition-all border-l-4 ${task.completed ? "border-l-secondary/50 opacity-80" : "border-l-primary/50"} hover:bg-white/[0.04] relative overflow-hidden`}>
+            <div className="flex items-center gap-4 z-10">
+                <button
+                    onClick={toggleComplete}
+                    disabled={loading}
+                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${task.completed ? "bg-secondary border-secondary" : "border-muted/50 hover:border-primary"
+                        }`}
+                >
+                    {task.completed && (
+                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                    )}
+                </button>
+                <div className="flex-1">
+                    <h3 className={`font-bold text-lg leading-tight transition-all ${task.completed ? "text-muted line-through" : "text-white"}`}>
                         {task.title}
                     </h3>
-                    <p className="text-sm text-muted mt-1 uppercase tracking-wider font-semibold opacity-70">
-                        {task.completed ? "Completed" : "Focusing"}
-                    </p>
+                    {task.description && (
+                        <p className={`text-sm mt-1 line-clamp-1 ${task.completed ? "text-muted/60" : "text-muted"}`}>
+                            {task.description}
+                        </p>
+                    )}
+                    <div className="flex items-center gap-2 mt-2">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest font-bold ${task.completed ? "bg-secondary/20 text-secondary" : "bg-primary/20 text-primary"}`}>
+                            {task.completed ? "Done" : "Focusing"}
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 z-10">
                 <TimerButton taskId={task.id} refresh={refresh} />
+
+                <div className="flex items-center border-l border-white/10 ml-2 pl-3 gap-2">
+                    <button
+                        onClick={() => onEdit(task)}
+                        className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-white transition-all"
+                        title="Edit Task"
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={deleteTask}
+                        disabled={loading}
+                        className="p-2 rounded-lg hover:bg-accent/10 text-muted hover:text-accent transition-all"
+                        title="Delete Task"
+                    >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
             </div>
+
+            {/* Subtle background glow when focusing */}
+            {!task.completed && (
+                <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+            )}
         </div>
     );
 }

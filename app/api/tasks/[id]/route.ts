@@ -70,16 +70,24 @@ export async function DELETE(req: Request, { params }: Params) {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const task = await prisma.task.deleteMany({
-        where: {
-            id,
-            userId,
-        },
-    });
+    try {
+        const task = await prisma.task.deleteMany({
+            where: {
+                id,
+                userId,
+            },
+        });
 
-    if (task.count === 0) {
-        return NextResponse.json({ message: "Task not found" }, { status: 404 });
+        if (task.count === 0) {
+            return NextResponse.json({ message: "Task not found" }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: "Task deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting task:", error);
+        return NextResponse.json(
+            { message: "Failed to delete task" },
+            { status: 500 }
+        );
     }
-
-    return NextResponse.json({ message: "Task deleted successfully" });
 }

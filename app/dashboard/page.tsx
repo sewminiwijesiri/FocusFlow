@@ -10,8 +10,12 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
         api("/api/dashboard/summary")
             .then(setData)
+            .catch(err => console.error("Dashboard error:", err))
             .finally(() => setLoading(false));
     }, []);
 
