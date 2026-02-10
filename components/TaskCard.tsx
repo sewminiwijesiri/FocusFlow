@@ -8,6 +8,8 @@ interface Task {
     title: string;
     description?: string;
     completed: boolean;
+    activeTimerStart?: string | null;
+    totalTimeSpent?: number;
 }
 
 interface TaskCardProps {
@@ -18,6 +20,31 @@ interface TaskCardProps {
 
 export default function TaskCard({ task, refresh, onEdit }: TaskCardProps) {
     const [loading, setLoading] = useState(false);
+    const [elapsedTime, setElapsedTime] = useState(0);
+
+    // Update elapsed time for running timer
+    React.useEffect(() => {
+        if (task.activeTimerStart) {
+            const interval = setInterval(() => {
+                const start = new Date(task.activeTimerStart!).getTime();
+                const now = Date.now();
+                const elapsed = Math.floor((now - start) / 1000);
+                setElapsedTime(elapsed);
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+    }, [task.activeTimerStart]);
+
+    // Format time in HH:MM:SS or MM:SS
+    const formatTime = (seconds: number) => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        if (hrs > 0) {
+            return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
 
     async function toggleComplete() {
         setLoading(true);
@@ -73,10 +100,30 @@ export default function TaskCard({ task, refresh, onEdit }: TaskCardProps) {
                             {task.description}
                         </p>
                     )}
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-3 mt-2 flex-wrap">
                         <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest font-bold ${task.completed ? "bg-secondary/20 text-secondary" : "bg-primary/20 text-primary"}`}>
                             {task.completed ? "Done" : "Focusing"}
                         </span>
+
+                        {/* Show running timer */}
+                        {task.activeTimerStart && (
+                            <div className="flex items-center gap-1.5 text-accent">
+                                <svg className="w-3.5 h-3.5 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z" />
+                                </svg>
+                                <span className="text-xs font-mono font-bold">{formatTime(elapsedTime)}</span>
+                            </div>
+                        )}
+
+                        {/* Show total time spent */}
+                        {!task.activeTimerStart && task.totalTimeSpent && task.totalTimeSpent > 0 && (
+                            <div className="flex items-center gap-1.5 text-muted">
+                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z" />
+                                </svg>
+                                <span className="text-xs font-mono">{formatTime(task.totalTimeSpent)}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
