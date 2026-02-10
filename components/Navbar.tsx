@@ -23,37 +23,37 @@ export default function Navbar() {
     const isAuthPage = pathname === "/login" || pathname === "/register";
 
     return (
-        <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex justify-between items-center transition-all">
+        <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-6 py-3 flex justify-between items-center">
             <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg shadow-glow flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                     <span className="text-white font-bold text-lg">F</span>
                 </div>
-                <h1 className="text-xl font-extrabold tracking-tight text-gradient">FocusFlow</h1>
+                <h1 className="text-xl font-bold text-gray-900">FocusFlow</h1>
             </Link>
 
-            <div className="flex items-center gap-8">
+            <div className="flex items-center gap-6">
                 {isLoggedIn ? (
                     <>
                         <div className="flex gap-6 items-center">
-                            <Link href="/dashboard" className={`text-sm font-medium transition-colors ${pathname === '/dashboard' ? 'text-primary' : 'text-muted hover:text-white'}`}>
+                            <Link href="/dashboard" className={`text-sm font-medium transition-colors ${pathname === '/dashboard' ? 'text-primary' : 'text-gray-600 hover:text-gray-900'}`}>
                                 Dashboard
                             </Link>
-                            <Link href="/tasks" className={`text-sm font-medium transition-colors ${pathname === '/tasks' ? 'text-primary' : 'text-muted hover:text-white'}`}>
+                            <Link href="/tasks" className={`text-sm font-medium transition-colors ${pathname === '/tasks' ? 'text-primary' : 'text-gray-600 hover:text-gray-900'}`}>
                                 Tasks
                             </Link>
                         </div>
                         <button
                             onClick={logout}
-                            className="bg-accent/10 hover:bg-accent/20 text-accent text-sm font-semibold px-4 py-2 rounded-lg transition-all"
+                            className="text-sm font-medium text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-all"
                         >
                             Logout
                         </button>
                     </>
                 ) : (
                     !isAuthPage && (
-                        <div className="flex gap-4">
-                            <Link href="/login" className="text-sm font-medium text-muted hover:text-white py-2">Sign In</Link>
-                            <Link href="/register" className="btn-primary py-2 px-4 text-sm rounded-lg">Get Started</Link>
+                        <div className="flex gap-3">
+                            <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900 px-3 py-1.5">Sign In</Link>
+                            <Link href="/register" className="btn-primary text-sm">Get Started</Link>
                         </div>
                     )
                 )}

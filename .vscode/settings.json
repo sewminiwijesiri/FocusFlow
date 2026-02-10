@@ -1,16 +1,3 @@
 {
-  "css.lint.unknownAtRules": "ignore",
-  "scss.lint.unknownAtRules": "ignore",
-  "css.validate": false,
-  "css.customData": [
-    ".vscode/css-data.json"
-  ],
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
-  },
-  "tailwindCSS.experimental.classRegex": [
-    [
-      "class-name\\s*:\\s*['\"]([^'\"]*)['\"]"
-    ]
-  ]
+  "css.lint.unknownAtRules": "ignore"
 }

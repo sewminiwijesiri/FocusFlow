@@ -127,280 +127,234 @@ export default function TasksPage() {
 
     return (
         <ProtectedRoute>
-            <main className="max-w-4xl mx-auto p-6 md:p-10 animate-fade-in min-h-screen">
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
-                    <div>
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-gradient mb-3">My Tasks</h1>
-                        <p className="text-muted text-lg">Organize your workflow and maximize focus.</p>
-                    </div>
-                    <div className="flex gap-3 flex-wrap">
-                        <button
-                            onClick={handleExportCSV}
-                            disabled={tasks.length === 0}
-                            className="btn-secondary flex items-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Export tasks to CSV"
-                        >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <span>Export CSV</span>
-                        </button>
+            <main className="max-w-4xl mx-auto px-4 py-8 md:py-12 animate-fade-in min-h-screen">
+                {/* Header */}
+                <header className="mb-12">
+                    <div className="flex items-end justify-between mb-8">
+                        <div>
+                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">My Tasks</h1>
+                            <p className="text-gray-500 text-sm">Stay focused and organized</p>
+                        </div>
                         <button
                             onClick={() => setIsCreateOpen(!isCreateOpen)}
-                            className={`btn-primary flex items-center gap-2 group ${isCreateOpen ? "bg-accent hover:bg-accent/80" : ""}`}
+                            className="btn-primary flex items-center gap-2 text-sm"
                         >
-                            <svg className={`w-5 h-5 transition-transform duration-300 ${isCreateOpen ? "rotate-45" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className={`w-4 h-4 transition-transform duration-200 ${isCreateOpen ? "rotate-45" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
-                            <span>{isCreateOpen ? "Close Form" : "New Task"}</span>
+                            <span>{isCreateOpen ? "Cancel" : "New"}</span>
                         </button>
                     </div>
-                </header>
 
-                {/* Search and Filter Section */}
-                <div className="glass-card p-6 mb-8 space-y-4">
-                    {/* Search Bar */}
-                    <div className="relative">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none">
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {/* Controls Bar */}
+                    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+                        {/* Search */}
+                        <div className="relative flex-1 max-w-md">
+                            <svg className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Search tasks by title or description..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="glass-input w-full pl-12 pr-12"
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery("")}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-all"
-                                title="Clear search"
-                            >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Filter Buttons */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted mr-2">Filter:</span>
-                        <button
-                            onClick={() => setFilterStatus("all")}
-                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${filterStatus === "all"
-                                ? "bg-primary text-white shadow-lg shadow-primary/30"
-                                : "bg-white/5 text-muted hover:bg-white/10 hover:text-white"
-                                }`}
-                        >
-                            All Tasks
-                            <span className="ml-2 text-xs opacity-70">({tasks.length})</span>
-                        </button>
-                        <button
-                            onClick={() => setFilterStatus("active")}
-                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${filterStatus === "active"
-                                ? "bg-primary text-white shadow-lg shadow-primary/30"
-                                : "bg-white/5 text-muted hover:bg-white/10 hover:text-white"
-                                }`}
-                        >
-                            Active
-                            <span className="ml-2 text-xs opacity-70">({tasks.filter(t => !t.completed).length})</span>
-                        </button>
-                        <button
-                            onClick={() => setFilterStatus("completed")}
-                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${filterStatus === "completed"
-                                ? "bg-secondary text-white shadow-lg shadow-secondary/30"
-                                : "bg-white/5 text-muted hover:bg-white/10 hover:text-white"
-                                }`}
-                        >
-                            Completed
-                            <span className="ml-2 text-xs opacity-70">({tasks.filter(t => t.completed).length})</span>
-                        </button>
-                    </div>
-
-                    {/* Sort Controls */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted mr-2">Sort By:</span>
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as "createdAt" | "timeSpent" | "title")}
-                            className="glass-input px-4 py-2 text-sm font-semibold cursor-pointer hover:bg-white/10 transition-all"
-                        >
-                            <option value="createdAt">📅 Date Created</option>
-                            <option value="timeSpent">⏱️ Time Spent</option>
-                            <option value="title">🔤 Title</option>
-                        </select>
-                        <button
-                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                            className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-muted hover:text-white transition-all flex items-center gap-2"
-                            title={`Sort ${sortOrder === "asc" ? "ascending" : "descending"}`}
-                        >
-                            {sortOrder === "desc" ? (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                    <span className="text-xs font-semibold">Desc</span>
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                    </svg>
-                                    <span className="text-xs font-semibold">Asc</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
-
-                    {/* Search Results Info */}
-                    {(searchQuery || filterStatus !== "all") && (
-                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                            <p className="text-sm text-muted">
-                                Showing <span className="text-white font-bold">{filteredAndSortedTasks.length}</span> of <span className="text-white font-bold">{tasks.length}</span> tasks
-                            </p>
-                            {(searchQuery || filterStatus !== "all") && (
+                            <input
+                                type="text"
+                                placeholder="Search tasks..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-9 py-2 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            />
+                            {searchQuery && (
                                 <button
-                                    onClick={() => {
-                                        setSearchQuery("");
-                                        setFilterStatus("all");
-                                    }}
-                                    className="text-xs text-accent hover:text-accent/80 font-semibold transition-all"
+                                    onClick={() => setSearchQuery("")}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                 >
-                                    Clear all filters
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
                                 </button>
                             )}
                         </div>
-                    )}
-                </div>
+
+                        {/* Filter & Sort */}
+                        <div className="flex gap-2 items-center">
+                            {/* Filter Pills */}
+                            <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                                <button
+                                    onClick={() => setFilterStatus("all")}
+                                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${filterStatus === "all"
+                                        ? "bg-white text-gray-900 shadow-sm"
+                                        : "text-gray-600 hover:text-gray-900"
+                                        }`}
+                                >
+                                    All
+                                </button>
+                                <button
+                                    onClick={() => setFilterStatus("active")}
+                                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${filterStatus === "active"
+                                        ? "bg-white text-gray-900 shadow-sm"
+                                        : "text-gray-600 hover:text-gray-900"
+                                        }`}
+                                >
+                                    Active
+                                </button>
+                                <button
+                                    onClick={() => setFilterStatus("completed")}
+                                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${filterStatus === "completed"
+                                        ? "bg-white text-gray-900 shadow-sm"
+                                        : "text-gray-600 hover:text-gray-900"
+                                        }`}
+                                >
+                                    Done
+                                </button>
+                            </div>
+
+                            {/* Sort Dropdown */}
+                            <select
+                                value={`${sortBy}-${sortOrder}`}
+                                onChange={(e) => {
+                                    const [newSortBy, newSortOrder] = e.target.value.split('-');
+                                    setSortBy(newSortBy as "createdAt" | "timeSpent" | "title");
+                                    setSortOrder(newSortOrder as "asc" | "desc");
+                                }}
+                                className="px-3 py-1.5 text-xs font-medium bg-gray-100 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                            >
+                                <option value="createdAt-desc">Newest</option>
+                                <option value="createdAt-asc">Oldest</option>
+                                <option value="timeSpent-desc">Most Time</option>
+                                <option value="timeSpent-asc">Least Time</option>
+                                <option value="title-asc">A → Z</option>
+                                <option value="title-desc">Z → A</option>
+                            </select>
+
+                            {/* Export Button */}
+                            <button
+                                onClick={handleExportCSV}
+                                disabled={tasks.length === 0}
+                                className="px-3 py-2 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                                title="Export tasks to CSV"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                    </div>
+                </header>
 
                 {/* Create Task Form */}
                 {isCreateOpen && (
-                    <div className="glass-card p-8 mb-10 animate-fade-in border-t-2 border-t-primary/50 relative">
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-primary rounded-full" />
-                            Create New Task
-                        </h2>
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 animate-fade-in">
                         <form onSubmit={create} className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1 ml-1">Task Title</label>
                                 <input
-                                    className="glass-input w-full"
-                                    placeholder="e.g. Design Landing Page"
+                                    className="w-full px-0 py-2 text-lg font-medium border-0 border-b border-gray-200 focus:outline-none focus:border-primary transition-colors placeholder:text-gray-400"
+                                    placeholder="Task title"
                                     value={title}
                                     onChange={e => setTitle(e.target.value)}
                                     autoFocus
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1 ml-1">Description (Optional)</label>
                                 <textarea
-                                    className="glass-input w-full min-h-[100px] resize-none"
-                                    placeholder="Add details about your task..."
+                                    className="w-full px-0 py-2 text-sm border-0 resize-none focus:outline-none placeholder:text-gray-400"
+                                    placeholder="Add description (optional)"
                                     value={description}
                                     onChange={e => setDescription(e.target.value)}
+                                    rows={2}
                                 />
                             </div>
-                            <div className="flex justify-end gap-3 pt-2">
-                                <button type="button" onClick={() => setIsCreateOpen(false)} className="btn-secondary">Cancel</button>
-                                <button type="submit" className="btn-primary">Create Task</button>
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button type="button" onClick={() => setIsCreateOpen(false)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">Cancel</button>
+                                <button type="submit" className="btn-primary text-sm">Create</button>
                             </div>
                         </form>
                     </div>
                 )}
 
                 {/* Tasks List */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center p-20 gap-4">
-                            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-muted animate-pulse">Loading your task flow...</p>
+                        <div className="flex flex-col items-center justify-center py-20 gap-3">
+                            <div className="w-8 h-8 border-3 border-gray-200 border-t-primary rounded-full animate-spin"></div>
+                            <p className="text-gray-400 text-sm">Loading...</p>
                         </div>
                     ) : filteredAndSortedTasks.length === 0 ? (
-                        <div className="text-center py-24 glass-card border-dashed border-2 border-white/5">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <div className="text-center py-20">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 {searchQuery || filterStatus !== "all" ? (
-                                    <svg className="w-8 h-8 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 ) : (
-                                    <svg className="w-8 h-8 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
                                 )}
                             </div>
                             {searchQuery || filterStatus !== "all" ? (
                                 <>
-                                    <h3 className="text-xl font-bold mb-2">No tasks found</h3>
-                                    <p className="text-muted text-lg mb-8 max-w-xs mx-auto">
-                                        No tasks match your current filters. Try adjusting your search or filters.
-                                    </p>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">No tasks found</h3>
+                                    <p className="text-gray-500 text-sm mb-4">Try adjusting your filters</p>
                                     <button
                                         onClick={() => {
                                             setSearchQuery("");
                                             setFilterStatus("all");
                                         }}
-                                        className="btn-secondary"
+                                        className="text-sm text-primary hover:text-primary-hover font-medium"
                                     >
-                                        Clear Filters
+                                        Clear filters
                                     </button>
                                 </>
                             ) : (
                                 <>
-                                    <h3 className="text-xl font-bold mb-2">No tasks found</h3>
-                                    <p className="text-muted text-lg mb-8 max-w-xs mx-auto">Your list is clear! Ready to start a new productive session?</p>
-                                    <button onClick={() => setIsCreateOpen(true)} className="btn-primary">Create Your First Task</button>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">No tasks yet</h3>
+                                    <p className="text-gray-500 text-sm mb-4">Create your first task to get started</p>
+                                    <button onClick={() => setIsCreateOpen(true)} className="btn-primary text-sm">Create Task</button>
                                 </>
                             )}
                         </div>
                     ) : (
-                        <div className="grid gap-4">
+                        <>
                             {filteredAndSortedTasks.map((t: Task, i: number) => (
-                                <div key={t.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
+                                <div key={t.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.02}s` }}>
                                     <TaskCard task={t} refresh={load} onEdit={setEditingTask} />
                                 </div>
                             ))}
-                        </div>
+                        </>
                     )}
                 </div>
 
-                {/* Edit Modal (Simple Overlay) */}
+                {/* Edit Modal */}
                 {editingTask && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-10 backdrop-blur-xl bg-black/60 animate-fade-in">
-                        <div className="glass-card w-full max-w-lg p-8 shadow-2xl border-white/10">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
+                        <div className="bg-white rounded-xl w-full max-w-lg p-6 shadow-2xl">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold">Edit Task</h2>
-                                <button onClick={() => setEditingTask(null)} className="text-muted hover:text-white transition-all">
-                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <h2 className="text-xl font-bold text-gray-900">Edit Task</h2>
+                                <button onClick={() => setEditingTask(null)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
                             </div>
                             <form onSubmit={updateTask} className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1 ml-1">Task Title</label>
                                     <input
-                                        className="glass-input w-full"
+                                        className="w-full px-0 py-2 text-lg font-medium border-0 border-b border-gray-200 focus:outline-none focus:border-primary transition-colors"
                                         value={editingTask.title}
                                         onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
-                                        placeholder="Task Title"
+                                        placeholder="Task title"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1 ml-1">Description</label>
                                     <textarea
-                                        className="glass-input w-full min-h-[150px] resize-none"
+                                        className="w-full px-0 py-2 text-sm border-0 resize-none focus:outline-none placeholder:text-gray-400"
                                         value={editingTask.description || ""}
                                         onChange={e => setEditingTask({ ...editingTask, description: e.target.value })}
-                                        placeholder="Add more details..."
+                                        placeholder="Description"
+                                        rows={3}
                                     />
                                 </div>
-                                <div className="flex justify-end gap-3 pt-4">
-                                    <button type="button" onClick={() => setEditingTask(null)} className="btn-secondary">Cancel</button>
-                                    <button type="submit" className="btn-primary">Save Changes</button>
+                                <div className="flex justify-end gap-2 pt-4">
+                                    <button type="button" onClick={() => setEditingTask(null)} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">Cancel</button>
+                                    <button type="submit" className="btn-primary text-sm">Save</button>
                                 </div>
                             </form>
                         </div>

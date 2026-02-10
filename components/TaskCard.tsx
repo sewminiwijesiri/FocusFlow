@@ -79,87 +79,81 @@ export default function TaskCard({ task, refresh, onEdit }: TaskCardProps) {
     }
 
     return (
-        <div className={`glass-card p-5 flex justify-between items-center group transition-all border-l-4 ${task.completed ? "border-l-secondary/50 opacity-80" : "border-l-primary/50"} hover:bg-white/[0.04] relative overflow-hidden`}>
-            <div className="flex items-center gap-4 z-10">
+        <div className={`bg-white border border-gray-200 rounded-lg p-4 flex justify-between items-start gap-4 transition-all duration-200 hover:border-gray-300 hover:shadow-sm group ${task.completed ? "opacity-60" : ""}`}>
+            <div className="flex items-start gap-3 flex-1 min-w-0">
                 <button
                     onClick={toggleComplete}
                     disabled={loading}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${task.completed ? "bg-secondary border-secondary" : "border-muted/50 hover:border-primary"
+                    className={`flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 mt-0.5 ${task.completed
+                        ? "bg-primary border-primary"
+                        : "border-gray-300 hover:border-primary"
                         }`}
                 >
                     {task.completed && (
-                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                     )}
                 </button>
-                <div className="flex-1">
-                    <h3 className={`font-bold text-lg leading-tight transition-all ${task.completed ? "text-muted line-through" : "text-white"}`}>
+
+                <div className="flex-1 min-w-0">
+                    <h3 className={`font-medium text-sm leading-snug transition-all ${task.completed ? "text-gray-500 line-through" : "text-gray-900"
+                        }`}>
                         {task.title}
                     </h3>
                     {task.description && (
-                        <p className={`text-sm mt-1 line-clamp-1 ${task.completed ? "text-muted/60" : "text-muted"}`}>
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                             {task.description}
                         </p>
                     )}
-                    <div className="flex items-center gap-3 mt-2 flex-wrap">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase tracking-widest font-bold ${task.completed ? "bg-secondary/20 text-secondary" : "bg-primary/20 text-primary"}`}>
-                            {task.completed ? "Done" : "Focusing"}
-                        </span>
 
+                    <div className="flex items-center gap-2 mt-2">
                         {/* Show running timer */}
                         {task.activeTimerStart && (
-                            <div className="flex items-center gap-1.5 text-accent">
-                                <svg className="w-3.5 h-3.5 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                            <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 border border-blue-200">
+                                <svg className="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z" />
                                 </svg>
-                                <span className="text-xs font-mono font-bold">{formatTime(elapsedTime)}</span>
+                                <span className="font-mono font-medium text-blue-600 text-xs">{formatTime(elapsedTime)}</span>
                             </div>
                         )}
 
                         {/* Show total time spent */}
                         {!task.activeTimerStart && task.totalTimeSpent && task.totalTimeSpent > 0 && (
-                            <div className="flex items-center gap-1.5 text-muted">
-                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                            <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100">
+                                <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z" />
                                 </svg>
-                                <span className="text-xs font-mono">{formatTime(task.totalTimeSpent)}</span>
+                                <span className="font-mono text-gray-600 text-xs">{formatTime(task.totalTimeSpent)}</span>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 z-10">
+            <div className="flex items-center gap-1 flex-shrink-0">
                 <TimerButton taskId={task.id} refresh={refresh} elapsedTime={elapsedTime} />
 
-                <div className="flex items-center border-l border-white/10 ml-2 pl-3 gap-2">
-                    <button
-                        onClick={() => onEdit(task)}
-                        className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-white transition-all"
-                        title="Edit Task"
-                    >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </button>
-                    <button
-                        onClick={deleteTask}
-                        disabled={loading}
-                        className="p-2 rounded-lg hover:bg-accent/10 text-muted hover:text-accent transition-all"
-                        title="Delete Task"
-                    >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </div>
+                <button
+                    onClick={() => onEdit(task)}
+                    className="p-2 rounded hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all"
+                    title="Edit Task"
+                >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </button>
+                <button
+                    onClick={deleteTask}
+                    disabled={loading}
+                    className="p-2 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition-all"
+                    title="Delete Task"
+                >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
             </div>
-
-            {/* Subtle background glow when focusing */}
-            {!task.completed && (
-                <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-            )}
         </div>
     );
 }
