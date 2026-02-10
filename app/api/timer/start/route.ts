@@ -6,9 +6,25 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        requireAuth(req);
+        const userId = requireAuth(req);
 
-        const { taskId } = await req.json();
+        let body;
+        try {
+            body = await req.json();
+        } catch {
+            return NextResponse.json(
+                { message: "Invalid request body" },
+                { status: 400 }
+            );
+        }
+
+        const { taskId } = body;
+        if (!taskId) {
+            return NextResponse.json(
+                { message: "taskId is required" },
+                { status: 400 }
+            );
+        }
 
         // Check if timer already running
         const active = await prisma.timeEntry.findFirst({
@@ -33,10 +49,16 @@ export async function POST(req: Request) {
         });
 
         return NextResponse.json(entry);
-    } catch {
+    } catch (err: any) {
+        if (err.message === "Unauthorized") {
+            return NextResponse.json(
+                { message: "Unauthorized" },
+                { status: 401 }
+            );
+        }
         return NextResponse.json(
-            { message: "Unauthorized" },
-            { status: 401 }
+            { message: "Internal server error" },
+            { status: 500 }
         );
     }
 }

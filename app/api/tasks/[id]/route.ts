@@ -42,22 +42,31 @@ export async function PUT(req: Request, { params }: Params) {
 
     const { title, description, completed } = await req.json();
 
+    // Fetch current state to determine if completedAt should be updated
+    const currentTask = await prisma.task.findFirst({
+        where: { id, userId }
+    });
 
-    const task = await prisma.task.updateMany({
-        where: {
-            id,
-            userId,
-        },
+    if (!currentTask) {
+        return NextResponse.json({ message: "Task not found" }, { status: 404 });
+    }
+
+    let completedAt = currentTask.completedAt;
+    if (completed === true && !currentTask.completed) {
+        completedAt = new Date();
+    } else if (completed === false) {
+        completedAt = null;
+    }
+
+    await prisma.task.update({
+        where: { id },
         data: {
             title,
             description,
             completed,
+            completedAt,
         },
     });
-
-    if (task.count === 0) {
-        return NextResponse.json({ message: "Task not found" }, { status: 404 });
-    }
 
     return NextResponse.json({ message: "Task updated successfully" });
 }

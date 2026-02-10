@@ -17,7 +17,7 @@ export default function TimerButton({ taskId, refresh }: TimerButtonProps) {
         if (!token) return;
 
         api(`/api/timer/active?taskId=${taskId}`).then((res) => {
-            setRunning(!!res.activeSession);
+            setRunning(!!res);
         }).catch(() => { });
     }, [taskId]);
 
@@ -29,8 +29,11 @@ export default function TimerButton({ taskId, refresh }: TimerButtonProps) {
                 body: JSON.stringify({ taskId }),
             });
             setRunning(true);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to start timer", err);
+            if (err.message === "Timer already running") {
+                setRunning(true);
+            }
         } finally {
             setLoading(false);
         }
@@ -45,8 +48,12 @@ export default function TimerButton({ taskId, refresh }: TimerButtonProps) {
             });
             setRunning(false);
             refresh();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to stop timer", err);
+            if (err.message === "No active timer") {
+                setRunning(false);
+                refresh();
+            }
         } finally {
             setLoading(false);
         }

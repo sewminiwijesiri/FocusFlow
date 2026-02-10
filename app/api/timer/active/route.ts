@@ -11,18 +11,31 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const taskId = searchParams.get("taskId");
 
+        if (!taskId) {
+            return NextResponse.json(
+                { message: "taskId is required" },
+                { status: 400 }
+            );
+        }
+
         const entry = await prisma.timeEntry.findFirst({
             where: {
-                taskId: taskId!,
+                taskId: taskId,
                 end: null,
             },
         });
 
         return NextResponse.json(entry);
-    } catch {
+    } catch (err: any) {
+        if (err.message === "Unauthorized") {
+            return NextResponse.json(
+                { message: "Unauthorized" },
+                { status: 401 }
+            );
+        }
         return NextResponse.json(
-            { message: "Unauthorized" },
-            { status: 401 }
+            { message: "Internal server error" },
+            { status: 500 }
         );
     }
 }

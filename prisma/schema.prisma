@@ -22,6 +22,7 @@ model Task {
   userId      String
   user        User        @relation(fields: [userId], references: [id])
   timeEntries TimeEntry[]
+  completedAt DateTime?
   createdAt   DateTime    @default(now())
 }
 
