@@ -1,107 +1,80 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import StatCard from "@/components/StatCard";
 
-type Task = {
-    id: string;
-    title: string;
-    description: string;
-    completed: boolean;
-};
-
-export default function Dashboard() {
-    const [tasks, setTasks] = useState<Task[]>([]);
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-
-    const fetchTasks = async () => {
-        const res = await fetch("/api/tasks", {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) setTasks(await res.json());
-    };
-
-    const addTask = async () => {
-        const res = await fetch("/api/tasks", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ title, description }),
-        });
-        if (res.ok) {
-            setTitle("");
-            setDescription("");
-            fetchTasks();
-        }
-    };
-
-    const toggleComplete = async (id: string) => {
-        await fetch(`/api/tasks/${id}/complete`, {
-            method: "PATCH",
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        fetchTasks();
-    };
-
-    const deleteTask = async (id: string) => {
-        await fetch(`/api/tasks/${id}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        fetchTasks();
-    };
+export default function DashboardPage() {
+    const [data, setData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchTasks();
+        api("/api/dashboard/summary")
+            .then(setData)
+            .finally(() => setLoading(false));
     }, []);
 
     return (
-        <div className="p-8">
-            <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
-            <div className="mb-6 flex gap-2">
-                <input
-                    type="text"
-                    placeholder="Title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="border p-2 rounded"
-                />
-                <input
-                    type="text"
-                    placeholder="Description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="border p-2 rounded"
-                />
-                <button onClick={addTask} className="bg-blue-500 text-white p-2 rounded">
-                    Add Task
-                </button>
-            </div>
+        <ProtectedRoute>
+            <main className="max-w-6xl mx-auto p-6 md:p-10 animate-fade-in">
+                <header className="mb-12">
+                    <h1 className="text-4xl font-extrabold text-gradient mb-2">Dashboard</h1>
+                    <p className="text-muted">Welcome back! Here&apos;s an overview of your productivity.</p>
+                </header>
 
-            <ul className="space-y-3">
-                {tasks.map((task) => (
-                    <li key={task.id} className="flex justify-between items-center p-3 border rounded">
-                        <div>
-                            <h2 className={`font-bold ${task.completed ? "line-through text-gray-400" : ""}`}>
-                                {task.title}
-                            </h2>
-                            <p>{task.description}</p>
+                {loading ? (
+                    <div className="flex justify-center p-20">
+                        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <StatCard
+                            title="Total Tasks"
+                            value={data?.totalTasks || 0}
+                            icon="📋"
+                            color="primary"
+                        />
+                        <StatCard
+                            title="Completed"
+                            value={data?.completedTasks || 0}
+                            icon="✅"
+                            color="secondary"
+                        />
+                        <StatCard
+                            title="Focus Time"
+                            value={`${Math.floor((data?.totalTimeSeconds || 0) / 60)}m`}
+                            icon="⏱️"
+                            color="accent"
+                        />
+                        <StatCard
+                            title="Today Focus"
+                            value={`${Math.floor((data?.todayTimeSeconds || 0) / 60)}m`}
+                            icon="🔥"
+                            color="primary"
+                        />
+                    </div>
+                )}
+
+                <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="glass-card p-8 group">
+                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                            <span>Recent Activity</span>
+                        </h2>
+                        <div className="h-40 flex items-center justify-center text-muted border border-dashed border-white/10 rounded-xl group-hover:border-primary/30 transition-colors">
+                            Activity visualization coming soon...
                         </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => toggleComplete(task.id)}
-                                className={`p-2 rounded ${task.completed ? "bg-yellow-400" : "bg-green-500"} text-white`}
-                            >
-                                {task.completed ? "Undo" : "Complete"}
-                            </button>
-                            <button onClick={() => deleteTask(task.id)} className="bg-red-500 p-2 rounded text-white">
-                                Delete
-                            </button>
+                    </div>
+
+                    <div className="glass-card p-8 group">
+                        <h2 className="text-xl font-bold mb-4">Focus Patterns</h2>
+                        <div className="h-40 flex items-center justify-center text-muted border border-dashed border-white/10 rounded-xl group-hover:border-secondary/30 transition-colors">
+                            Pattern analysis coming soon...
                         </div>
-                    </li>
-                ))}
-            </ul>
-        </div>
+                    </div>
+                </div>
+            </main>
+        </ProtectedRoute>
     );
 }
+
