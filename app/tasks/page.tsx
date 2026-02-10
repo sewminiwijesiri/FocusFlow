@@ -11,6 +11,10 @@ interface Task {
     title: string;
     description?: string;
     completed: boolean;
+    createdAt: string;
+    completedAt?: string | null;
+    totalTimeSpent?: number;
+    activeTimerStart?: string | null;
 }
 
 export default function TasksPage() {
@@ -20,6 +24,10 @@ export default function TasksPage() {
     const [loading, setLoading] = useState(true);
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filterStatus, setFilterStatus] = useState<"all" | "active" | "completed">("all");
+    const [sortBy, setSortBy] = useState<"createdAt" | "timeSpent" | "title">("createdAt");
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
     async function load() {
         try {
@@ -81,6 +89,42 @@ export default function TasksPage() {
         load();
     }, []);
 
+    // Filter and sort tasks
+    const filteredAndSortedTasks = tasks
+        .filter(task => {
+            // Search filter
+            const matchesSearch = searchQuery.trim() === "" ||
+                task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (task.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+
+            // Status filter
+            const matchesStatus =
+                filterStatus === "all" ||
+                (filterStatus === "active" && !task.completed) ||
+                (filterStatus === "completed" && task.completed);
+
+            return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => {
+            let comparison = 0;
+
+            switch (sortBy) {
+                case "createdAt":
+                    comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                    break;
+                case "timeSpent":
+                    const aTime = a.totalTimeSpent || 0;
+                    const bTime = b.totalTimeSpent || 0;
+                    comparison = aTime - bTime;
+                    break;
+                case "title":
+                    comparison = a.title.localeCompare(b.title);
+                    break;
+            }
+
+            return sortOrder === "asc" ? comparison : -comparison;
+        });
+
     return (
         <ProtectedRoute>
             <main className="max-w-4xl mx-auto p-6 md:p-10 animate-fade-in min-h-screen">
@@ -112,6 +156,126 @@ export default function TasksPage() {
                         </button>
                     </div>
                 </header>
+
+                {/* Search and Filter Section */}
+                <div className="glass-card p-6 mb-8 space-y-4">
+                    {/* Search Bar */}
+                    <div className="relative">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search tasks by title or description..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="glass-input w-full pl-12 pr-12"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery("")}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-white transition-all"
+                                title="Clear search"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Filter Buttons */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted mr-2">Filter:</span>
+                        <button
+                            onClick={() => setFilterStatus("all")}
+                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${filterStatus === "all"
+                                ? "bg-primary text-white shadow-lg shadow-primary/30"
+                                : "bg-white/5 text-muted hover:bg-white/10 hover:text-white"
+                                }`}
+                        >
+                            All Tasks
+                            <span className="ml-2 text-xs opacity-70">({tasks.length})</span>
+                        </button>
+                        <button
+                            onClick={() => setFilterStatus("active")}
+                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${filterStatus === "active"
+                                ? "bg-primary text-white shadow-lg shadow-primary/30"
+                                : "bg-white/5 text-muted hover:bg-white/10 hover:text-white"
+                                }`}
+                        >
+                            Active
+                            <span className="ml-2 text-xs opacity-70">({tasks.filter(t => !t.completed).length})</span>
+                        </button>
+                        <button
+                            onClick={() => setFilterStatus("completed")}
+                            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${filterStatus === "completed"
+                                ? "bg-secondary text-white shadow-lg shadow-secondary/30"
+                                : "bg-white/5 text-muted hover:bg-white/10 hover:text-white"
+                                }`}
+                        >
+                            Completed
+                            <span className="ml-2 text-xs opacity-70">({tasks.filter(t => t.completed).length})</span>
+                        </button>
+                    </div>
+
+                    {/* Sort Controls */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-bold uppercase tracking-wider text-muted mr-2">Sort By:</span>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value as "createdAt" | "timeSpent" | "title")}
+                            className="glass-input px-4 py-2 text-sm font-semibold cursor-pointer hover:bg-white/10 transition-all"
+                        >
+                            <option value="createdAt">📅 Date Created</option>
+                            <option value="timeSpent">⏱️ Time Spent</option>
+                            <option value="title">🔤 Title</option>
+                        </select>
+                        <button
+                            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                            className="px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-muted hover:text-white transition-all flex items-center gap-2"
+                            title={`Sort ${sortOrder === "asc" ? "ascending" : "descending"}`}
+                        >
+                            {sortOrder === "desc" ? (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                    <span className="text-xs font-semibold">Desc</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                    </svg>
+                                    <span className="text-xs font-semibold">Asc</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Search Results Info */}
+                    {(searchQuery || filterStatus !== "all") && (
+                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                            <p className="text-sm text-muted">
+                                Showing <span className="text-white font-bold">{filteredAndSortedTasks.length}</span> of <span className="text-white font-bold">{tasks.length}</span> tasks
+                            </p>
+                            {(searchQuery || filterStatus !== "all") && (
+                                <button
+                                    onClick={() => {
+                                        setSearchQuery("");
+                                        setFilterStatus("all");
+                                    }}
+                                    className="text-xs text-accent hover:text-accent/80 font-semibold transition-all"
+                                >
+                                    Clear all filters
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
 
                 {/* Create Task Form */}
                 {isCreateOpen && (
@@ -155,20 +319,46 @@ export default function TasksPage() {
                             <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                             <p className="text-muted animate-pulse">Loading your task flow...</p>
                         </div>
-                    ) : tasks.length === 0 ? (
+                    ) : filteredAndSortedTasks.length === 0 ? (
                         <div className="text-center py-24 glass-card border-dashed border-2 border-white/5">
                             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <svg className="w-8 h-8 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
+                                {searchQuery || filterStatus !== "all" ? (
+                                    <svg className="w-8 h-8 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-8 h-8 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                )}
                             </div>
-                            <h3 className="text-xl font-bold mb-2">No tasks found</h3>
-                            <p className="text-muted text-lg mb-8 max-w-xs mx-auto">Your list is clear! Ready to start a new productive session?</p>
-                            <button onClick={() => setIsCreateOpen(true)} className="btn-primary">Create Your First Task</button>
+                            {searchQuery || filterStatus !== "all" ? (
+                                <>
+                                    <h3 className="text-xl font-bold mb-2">No tasks found</h3>
+                                    <p className="text-muted text-lg mb-8 max-w-xs mx-auto">
+                                        No tasks match your current filters. Try adjusting your search or filters.
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            setSearchQuery("");
+                                            setFilterStatus("all");
+                                        }}
+                                        className="btn-secondary"
+                                    >
+                                        Clear Filters
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <h3 className="text-xl font-bold mb-2">No tasks found</h3>
+                                    <p className="text-muted text-lg mb-8 max-w-xs mx-auto">Your list is clear! Ready to start a new productive session?</p>
+                                    <button onClick={() => setIsCreateOpen(true)} className="btn-primary">Create Your First Task</button>
+                                </>
+                            )}
                         </div>
                     ) : (
                         <div className="grid gap-4">
-                            {tasks.map((t, i) => (
+                            {filteredAndSortedTasks.map((t: Task, i: number) => (
                                 <div key={t.id} className="animate-fade-in" style={{ animationDelay: `${i * 0.05}s` }}>
                                     <TaskCard task={t} refresh={load} onEdit={setEditingTask} />
                                 </div>

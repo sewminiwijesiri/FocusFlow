@@ -6,11 +6,13 @@ import { api } from "@/lib/api";
 interface TimerButtonProps {
     taskId: string;
     refresh: () => void;
+    elapsedTime?: number; // Time in seconds
 }
 
-export default function TimerButton({ taskId, refresh }: TimerButtonProps) {
+export default function TimerButton({ taskId, refresh, elapsedTime = 0 }: TimerButtonProps) {
     const [running, setRunning] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [displayTime, setDisplayTime] = useState(elapsedTime);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -20,6 +22,22 @@ export default function TimerButton({ taskId, refresh }: TimerButtonProps) {
             setRunning(!!res);
         }).catch(() => { });
     }, [taskId]);
+
+    // Update display time from prop
+    useEffect(() => {
+        setDisplayTime(elapsedTime);
+    }, [elapsedTime]);
+
+    // Update display time every second when running
+    useEffect(() => {
+        if (!running) return;
+
+        const interval = setInterval(() => {
+            setDisplayTime(prev => prev + 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [running]);
 
     async function start() {
         setLoading(true);
@@ -59,6 +77,17 @@ export default function TimerButton({ taskId, refresh }: TimerButtonProps) {
         }
     }
 
+    // Format time in HH:MM:SS or MM:SS
+    const formatTime = (seconds: number) => {
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        if (hrs > 0) {
+            return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
 
     if (running) {
         return (
@@ -68,6 +97,7 @@ export default function TimerButton({ taskId, refresh }: TimerButtonProps) {
                 className="bg-accent/20 hover:bg-accent/30 text-accent font-bold px-5 py-2 rounded-xl border border-accent/30 transition-all flex items-center gap-2 group active:scale-95 disabled:opacity-50 shadow-[0_0_15px_rgba(244,63,94,0.2)]"
             >
                 <div className="w-2 h-2 bg-accent rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.8)]" />
+                <span className="text-sm tracking-wide font-mono">{formatTime(displayTime)}</span>
                 <span className="text-sm tracking-wide">Stop</span>
             </button>
         );

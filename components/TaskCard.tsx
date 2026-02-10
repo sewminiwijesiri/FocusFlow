@@ -10,6 +10,8 @@ interface Task {
     completed: boolean;
     activeTimerStart?: string | null;
     totalTimeSpent?: number;
+    createdAt: string;
+    completedAt?: string | null;
 }
 
 interface TaskCardProps {
@@ -129,7 +131,7 @@ export default function TaskCard({ task, refresh, onEdit }: TaskCardProps) {
             </div>
 
             <div className="flex items-center gap-2 z-10">
-                <TimerButton taskId={task.id} refresh={refresh} />
+                <TimerButton taskId={task.id} refresh={refresh} elapsedTime={elapsedTime} />
 
                 <div className="flex items-center border-l border-white/10 ml-2 pl-3 gap-2">
                     <button
