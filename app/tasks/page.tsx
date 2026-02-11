@@ -26,7 +26,7 @@ export default function TasksPage() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState<"all" | "active" | "completed">("all");
-    const [sortBy, setSortBy] = useState<"createdAt" | "timeSpent" | "title">("createdAt");
+    const [sortBy, setSortBy] = useState<"createdAt" | "timeSpent" | "status">("createdAt");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
     async function load() {
@@ -117,8 +117,10 @@ export default function TasksPage() {
                     const bTime = b.totalTimeSpent || 0;
                     comparison = aTime - bTime;
                     break;
-                case "title":
-                    comparison = a.title.localeCompare(b.title);
+                case "status":
+                    const aStatus = a.completed ? 1 : 0;
+                    const bStatus = b.completed ? 1 : 0;
+                    comparison = aStatus - bStatus;
                     break;
             }
 
@@ -206,22 +208,32 @@ export default function TasksPage() {
                             </div>
 
                             {/* Sort Dropdown */}
-                            <select
-                                value={`${sortBy}-${sortOrder}`}
-                                onChange={(e) => {
-                                    const [newSortBy, newSortOrder] = e.target.value.split('-');
-                                    setSortBy(newSortBy as "createdAt" | "timeSpent" | "title");
-                                    setSortOrder(newSortOrder as "asc" | "desc");
-                                }}
-                                className="px-3 py-1.5 text-xs font-medium bg-gray-100 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-                            >
-                                <option value="createdAt-desc">Newest</option>
-                                <option value="createdAt-asc">Oldest</option>
-                                <option value="timeSpent-desc">Most Time</option>
-                                <option value="timeSpent-asc">Least Time</option>
-                                <option value="title-asc">A → Z</option>
-                                <option value="title-desc">Z → A</option>
-                            </select>
+                            <div className="flex gap-1 items-center bg-gray-100 rounded-lg p-1">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value as "createdAt" | "timeSpent" | "status")}
+                                    className="pl-2 pr-1 py-1 text-xs font-medium bg-transparent border-0 focus:outline-none focus:ring-0 cursor-pointer text-gray-700 hover:text-gray-900"
+                                >
+                                    <option value="timeSpent">Time</option>
+                                    <option value="createdAt">Date</option>
+                                    <option value="status">Status</option>
+                                </select>
+                                <button
+                                    onClick={() => setSortOrder(prev => prev === "asc" ? "desc" : "asc")}
+                                    className="p-1 rounded-md hover:bg-white hover:shadow-sm text-gray-600 transition-all"
+                                    title={sortOrder === "asc" ? "Ascending" : "Descending"}
+                                >
+                                    {sortOrder === "asc" ? (
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h5m1 0v12m0 0l-4-4m4 4l4-4" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
 
                             {/* Export Button */}
                             <button
