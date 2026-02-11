@@ -7,19 +7,19 @@ interface StatCardProps {
 
 export default function StatCard({ title, value, icon, color }: StatCardProps) {
     const colorClasses = {
-        primary: "text-primary bg-primary/10",
-        secondary: "text-secondary bg-secondary/10",
-        accent: "text-accent bg-accent/10",
+        primary: "text-blue-600 bg-blue-50",
+        secondary: "text-green-600 bg-green-50",
+        accent: "text-red-600 bg-red-50",
     };
 
     return (
-        <div className="glass-card p-6 flex items-center gap-5 group hover:border-primary/20 transition-all duration-300">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm ${colorClasses[color]}`}>
+        <div className="glass-card p-5 flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl ${colorClasses[color]}`}>
                 {icon}
             </div>
             <div>
-                <p className="text-muted text-sm font-medium mb-1">{title}</p>
-                <h2 className="text-3xl font-bold tracking-tight">{value}</h2>
+                <p className="text-gray-600 text-xs font-medium mb-0.5 uppercase tracking-wide">{title}</p>
+                <h2 className="text-2xl font-bold text-gray-900">{value}</h2>
             </div>
         </div>
     );
